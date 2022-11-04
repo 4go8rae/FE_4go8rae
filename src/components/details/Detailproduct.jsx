@@ -5,7 +5,10 @@ import Header from '../header/Header'
 
 const DetailProduct = () => {
   const [count, setCount] = useState(0);
+  //상품 가격
   let price = 200000*count;
+
+  //정규식으로 세자리마다 ,찍어주는 함수
   let result = price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
   const onChangeHandler = (event, setState) => setState(event.target.value);
