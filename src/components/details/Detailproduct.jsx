@@ -32,6 +32,7 @@ const DetailProduct = () => {
                 <CountSpan>수량</CountSpan>
                 <input
                   type="number"
+                  min="0"
                   name="count"
                   value={count}
                   onChange={(event) => onChangeHandler(event, setCount)}
@@ -107,6 +108,19 @@ const TitleSpan = styled.b`
 const CountDiv = styled.div`
   display: flex;
   padding-top: 0.5rem;
+  input{
+    width:15%;
+    padding:0;
+    padding-left:0.5rem;
+    font-weight:700;
+    font-size:1rem;
+    margin:0;
+    ::-webkit-inner-spin-button {
+    height:43px;
+    margin: 0;
+    padding-right:0.3rem;
+    }
+  }
 `;
 const CountSpan = styled.b`
   font-weight: 700;
