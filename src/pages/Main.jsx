@@ -1,10 +1,11 @@
 import React from "react";
+import List from "../components/main/List";
 
 const Main = () => {
 
   return (
     <>
-    <p>여기는 메인</p>
+     <List/>
     </>
   );
 }
