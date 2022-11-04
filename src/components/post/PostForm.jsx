@@ -4,8 +4,8 @@ import styled from "styled-components";
 import { useRef } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
-import img from "../../assert/image/image.svg";
 import imageCompression from "browser-image-compression";
+import image1 from "../../assert/form/image1.png"
 import Header from "../header/Header";
 
 const PostFomr = () => {
@@ -70,16 +70,16 @@ const PostFomr = () => {
       imageLists.push(compressedImage);
     }
 
-    //이미지 개수 최대 3개까지 등록가능
-    if (imageLists.length > 3) {
+    //이미지 개수 최대 1개까지 등록가능
+    if (imageLists.length > 1) {
       Swal.fire({
-        text: "이미지는 최대 3개까지 등록 가능합니다",
+        text: "이미지는 최대 1개까지 등록 가능합니다",
         icon: "warning",
       });
-      imageLists = imageLists.slice(0, 3);
+      imageLists = imageLists.slice(0, 1);
     }
-    if (imgFiles.length > 3) {
-      imgFiles = imgFiles.slice(0, 3);
+    if (imgFiles.length > 1) {
+      imgFiles = imgFiles.slice(0, 1);
     }
     setFileImage(imgFiles);
     setImage(imageLists);
@@ -176,7 +176,7 @@ const PostFomr = () => {
           </ImgTitle>
             <ImgBox>
               <ImgLabel>
-                <p style={{ marginTop: "15px", fontSize: "0.9rem" }}>
+                <p style={{ marginTop: "14px", fontSize: "1.2em" }}>
                   이미지 등록
                 </p>
                 <ImgInput
@@ -188,12 +188,18 @@ const PostFomr = () => {
                   id="image"
                 />
               </ImgLabel>
-              {fileImage.map((image, id) => (
+              {fileImage.length !== 0
+              ?(fileImage.map((image, id) => (
                 <div key={id}>
                   <Img alt={`${image}-${id}`} src={image} />
                   <DeleteImg onClick={() => handleDeleteImage(id)}>X</DeleteImg>
                 </div>
-              ))}
+                )))
+              :(<div>
+                  <NoneImg alt='preview' src={image1} />
+                </div>)
+              }
+             
             </ImgBox>
         </LiImg>
         <ButDiv>
@@ -280,12 +286,22 @@ const Img = styled.img`
     -webkit-font-smoothing: antialiased;
   }
 `;
+const NoneImg = styled.img`
+  width: 100%;
+  height: 294px;
+  font-synthesis: none;
+  border-radius: 10px;
+  ::-webkit-font-smoothing {
+    -webkit-appearance: none;
+    -webkit-font-smoothing: antialiased;
+  }
+`;
 const DeleteImg = styled.button`
   margin: -10.3px;
   position: relative;
   color: red;
-  right: -41%;;
-  bottom: 92%;
+  right: -45%;;
+  bottom: 90%;
   background-color: white;
   font-weight: bold;
   border: none;
