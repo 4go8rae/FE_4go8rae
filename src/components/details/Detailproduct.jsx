@@ -1,196 +1,168 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
-import DetailImage from './DetailImage';
-import Header from '../header/Header'
+import DetailImage from "./DetailImage";
+import Header from "../header/Header";
+import { useParams } from "react-router-dom";
+import { instance } from "../../shared/Api";
+import { useEffect } from "react";
 
 const DetailProduct = () => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(1);
+  const [product, setProduct] = useState();
+  const { id } = useParams();
+
+  // 제품 상세정보 조회
+  const getData = async () => {
+    const res = await instance.get(`api/product/${id}`);
+    setProduct(res.data)
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
   //상품 가격
-  let price = 200000*count;
+  let price = product?.price * count;
 
   //정규식으로 세자리마다 ,찍어주는 함수
-  let result = price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  let totalPrice = price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  let unitPrice = product?.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
   const onChangeHandler = (event, setState) => setState(event.target.value);
+
+  // 장바구니에 추가
+  const cartHandler = async () => {
+    const req = {
+      id,
+      count,
+    };
+    const res = await instance.post(`/api/auth/cart`, req);
+    console.log(res)
+  };
+
+
   return (
-    <>
-      <BoxDiv>
-        <Header />
-        <Box>
-          <Cover>
-            <ImgCover>
-              <DetailImage />
-              <ThemeDiv>
-              </ThemeDiv>
-              <TitleDiv>
-                <TitleSpan>테스트제품</TitleSpan>
-              </TitleDiv>
-              <TitleDiv>
-                <TitleSpan>가격₩ 200,000</TitleSpan>
-              </TitleDiv>
-              <CountDiv>
-                <CountSpan>수량</CountSpan>
-                <input
-                  type="number"
-                  min="0"
-                  name="count"
-                  value={count}
-                  onChange={(event) => onChangeHandler(event, setCount)}
-                />
-              </CountDiv>
-              <TitleDiv>
-                <TitleSpan>총 상품 금액</TitleSpan>
-                <TotalDiv>
-                  <TotalSpan>총 수량 {count}개</TotalSpan>
-                  <TotalPriceSpan> ₩{result}</TotalPriceSpan>
-                </TotalDiv>
-              </TitleDiv>
-              <BuyDiv>
-               <BuyBut>구매하기</BuyBut>
-               <ButtonDiv>
-                <AskBut>
-                      문의하기
-                  </AskBut>
-                  <LikeBut>찜하기</LikeBut>
-                </ButtonDiv>
-              </BuyDiv>
-            </ImgCover>
-          </Cover>
-        </Box>
-      </BoxDiv>
-    </>
-  )
-}
+    <Box>
+      <Header />
+      <Cover>
+        <DetailImage />
+        <Title style={{ justifyContent: "right" }}>
+          <b style={{ fontSize: "23px" }}>{product?.title}</b>
+        </Title>
+        <Title>
+          <b>가격</b>
+          <b>₩ {unitPrice}</b>
+        </Title>
+        <Count>
+          <b>수량</b>
+          <input
+            type="number"
+            min="1"
+            name="count"
+            value={count}
+            onChange={(event) => onChangeHandler(event, setCount)}
+          />
+        </Count>
+        <Title>
+          <b>총 상품 금액</b>
+          <Price> ₩ {totalPrice}</Price>
+        </Title>
+        <Buttons>
+          <button>구매하기</button>
+          <div>
+            <button>문의하기</button>
+            <button onClick={cartHandler}>찜하기</button>
+          </div>
+        </Buttons>
+      </Cover>
+    </Box>
+  );
+};
 
 export default DetailProduct;
 
-const BoxDiv = styled.div`
+const Box = styled.div`
   width: 100%;
   max-width: 428px;
   margin: 0 auto;
-`;
-const Box = styled.div`
-  padding-top: 3.8rem;
-`;
-const Cover = styled.div`
-  display: flex;
-  -webkit-box-pack: center;
-  justify-content: center;
-  margin: 0 auto;
-  padding-top: 20px;
-  padding-bottom: 20px;
   background-color: #eef6fa;
 `;
-const ImgCover = styled.div`
+
+const Cover = styled.div`
   flex-shrink: 0;
   width: 90%;
-  max-width: 428px;
   min-height: 450px;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-`;
-const ThemeDiv = styled.div`
-  padding-top: 2rem;
+  padding-top: 6rem;
+  padding-bottom: 20px;
+
+  & b {
+    font-weight: 700;
+    font-size: 18px;
+    margin: 5px 0;
+  }
 `;
 
-const TitleDiv = styled.div`
+const Title = styled.div`
   display: flex;
   justify-content: space-between;
   padding-top: 0.5rem;
-  align-items:center;
+  align-items: center;
 `;
-const TitleSpan = styled.b`
-  font-weight: 700;
-  font-size: 18px;
-  margin: 5px 0;
-`;
-const CountDiv = styled.div`
+
+const Count = styled.div`
   display: flex;
   padding-top: 0.5rem;
-  input{
-    width:15%;
-    padding:0;
-    padding-left:0.5rem;
-    font-weight:700;
-    font-size:1rem;
-    margin:0;
+  justify-content: space-between;
+
+  & input {
+    width: 15%;
+    padding: 0;
+    padding-left: 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
     ::-webkit-inner-spin-button {
-    height:43px;
-    margin: 0;
-    padding-right:0.3rem;
+      height: 43px;
+      padding-right: 0.3rem;
     }
   }
 `;
-const CountSpan = styled.b`
-  font-weight: 700;
-  font-size: 18px;
-  margin: 5px 0;
-  padding-right:1rem;
-`;
-const TotalDiv = styled.div`
-  display: flex;
-  align-items:center;
-`
-const TotalSpan = styled.div`
-  font-weight: 700;
-  font-size: 16px;
-  margin: 5px 0;
-  color: rgb(136, 136, 136);
-  padding-right:0.5rem;
-`;
-const TotalPriceSpan = styled.div`
+
+const Price = styled.p`
   font-weight: 700;
   font-size: 24px;
   margin: 5px 0;
   color: rgb(95, 0, 128);
 `;
 
-const BuyDiv = styled.div`
-
+const Buttons = styled.div`
   margin-top: 30px;
-`;
 
-const ButtonDiv = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-`;
+  & button {
+    cursor: pointer;
+    color: white;
+    background-color: #abd4e2;
+    border: 0px;
+    height: 2.5rem;
+    border-radius: 5px;
+    line-height: 2.5rem;
+    width: 100%;
+    font-weight: bold;
+  }
 
-const BuyBut = styled.button`
-  cursor: pointer;
-  color: white;
-  background-color: #abd4e2;
-  border: 0px;
-  height: 2.5rem;
-  border-radius: 5px;
-  line-height: 2.5rem;
-  width: 100%;
-  font-weight: bold;
-  margin-right: 0.5rem;
-`;
+  & div {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    gap: 15px;
 
-const LikeBut = styled.button`
-  cursor: pointer;
-  font-weight: 600;
-  color: #abd4e2;
-  background-color: white;
-  border: 3px solid #abd4e2;
-  height: 2.5rem;
-  border-radius: 5px;
-  line-height: 2.1rem;
-  width: 100%;
-`;
-
-const AskBut = styled.button`
-  cursor: pointer;
-  color: #abd4e2;
-  background-color: white;
-  border: 3px solid #abd4e2;
-  height: 2.5rem;
-  border-radius: 5px;
-  line-height: 2.1rem;
-  width: 100%;
-  font-weight: bold;
-  margin-right: 0.5rem;
+    & button {
+      color: #abd4e2;
+      background-color: white;
+      border: 3px solid #abd4e2;
+      line-height: 2.1rem;
+    }
+  }
 `;
