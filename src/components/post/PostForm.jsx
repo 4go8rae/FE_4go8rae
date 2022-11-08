@@ -5,13 +5,13 @@ import { useRef } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import imageCompression from "browser-image-compression";
-import image1 from "../../assert/form/image1.png"
+import image1 from "../../assert/form/image1.png";
 import Header from "../header/Header";
+import { instance } from "../../shared/Api";
 
 const PostFomr = () => {
   const navigate = useNavigate();
   const inputFocus = useRef(null);
-  const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [titleMessage, setTitleMessage] = useState("");
   const [isTitle, setIsTitle] = useState(false);
@@ -26,16 +26,16 @@ const PostFomr = () => {
 
   //이미지 리사이징
   const compressImage = async (image) => {
-    try{
+    try {
       const options = {
         maxSizeMb: 1,
         maxWidthOrHeight: 600,
-        alwaysKeepResolution : true, //품질만 낮추고 항상 너비와 높이 유지
-      }
+        alwaysKeepResolution: true, //품질만 낮추고 항상 너비와 높이 유지
+      };
       return await imageCompression(image, options);
-    } catch(e){
+    } catch (e) {
       console.log(e);
-    };
+    }
   };
 
   //제목 유효성 검사
@@ -52,11 +52,11 @@ const PostFomr = () => {
       setIsTitle(true);
     }
   };
-  
+
   const onChangeHandler = (event, setState) => setState(event.target.value);
 
   //이미지 미리보기 및 리사이징
-  const onChangeImg = async(e) => {
+  const onChangeImg = async (e) => {
     const imageList = e.target.files;
     let imageLists = [...image];
     let imgFiles = [...fileImage];
@@ -91,14 +91,14 @@ const PostFomr = () => {
     setImage(image.filter((_, index) => index !== id));
   };
 
-  
-  const data = {
-    title: title,
-    price:price
-  };
-
-  const onAddComment = async (e) => {
+  const onAddProduct = async (e) => {
     e.preventDefault();
+
+    const data = {
+      title: title,
+      price: price,
+    };
+
     if (title === "" || price === 0) {
       Swal.fire({
         text: "필수항목을 입력해주세요.",
@@ -106,26 +106,34 @@ const PostFomr = () => {
       });
       return;
     }
-    let json = JSON.stringify(data);
-    const blob = new Blob([json], { type: "application/json" });
-    const formData = new FormData();
-    for (let i = 0; i < image.length; i++) {
-      formData.append("image", image[i]);
-    }
-    formData.append("data", blob);
+    try {
+      let json = JSON.stringify(data);
+      const blob = new Blob([json], { type: "application/json" });
+      const formData = new FormData();
+      for (let i = 0; i < image.length; i++) {
+        formData.append("image", image[i]);
+      }
+      formData.append("data", blob);
 
-    const payload = {
-      formData: formData,
-    };
-    for (let value of payload.formData.values()) {
-      console.log(value);
+      // 추후에 data => formData로 변경해야함
+        await instance.post(`/api/auth/product`, data);
+        Swal.fire({
+          text: "상품이 등록되었습니다.",
+          icon: "success",
+        });
+        navigate('/')
+    } catch {
+      Swal.fire({
+        text: "상품 등록에 실패하였습니다",
+        icon: "error",
+      });
     }
   };
 
   return (
     <StDetailForm>
       <Box>
-        <Header/>
+        <Header />
         <BoxTitle>
           <BoxSpan>
             <span>*</span>은 필수항목입니다.
@@ -159,11 +167,11 @@ const PostFomr = () => {
           </RatingText>
           <PriceDiv>
             <InputPrice
-                type="number"
-                name="price"
-                value={price}
-                onChange={(event) => onChangeHandler(event,setPrice)}
-                placeholder="가격을 입력해주세요"
+              type="number"
+              name="price"
+              value={price}
+              onChange={(event) => onChangeHandler(event, setPrice)}
+              placeholder="가격을 입력해주세요"
             />
           </PriceDiv>
         </Wrap>
@@ -174,39 +182,37 @@ const PostFomr = () => {
               *
             </span>
           </ImgTitle>
-            <ImgBox>
-              <ImgLabel>
-                <p style={{ marginTop: "14px", fontSize: "1.2em" }}>
-                  이미지 등록
-                </p>
-                <ImgInput
-                  type="file"
-                  name="imgUrl"
-                  accept="image/*"
-                  multiple
-                  onChange={onChangeImg}
-                  id="image"
-                />
-              </ImgLabel>
-              {fileImage.length !== 0
-              ?(fileImage.map((image, id) => (
+          <ImgBox>
+            <ImgLabel>
+              <p style={{ marginTop: "14px", fontSize: "1.2em" }}>
+                이미지 등록
+              </p>
+              <ImgInput
+                type="file"
+                name="imgUrl"
+                accept="image/*"
+                multiple
+                onChange={onChangeImg}
+                id="image"
+              />
+            </ImgLabel>
+            {fileImage.length !== 0 ? (
+              fileImage.map((image, id) => (
                 <div key={id}>
                   <Img alt={`${image}-${id}`} src={image} />
                   <DeleteImg onClick={() => handleDeleteImage(id)}>X</DeleteImg>
                 </div>
-                )))
-              :(<div>
-                  <NoneImg alt='preview' src={image1} />
-                </div>)
-              }
-             
-            </ImgBox>
+              ))
+            ) : (
+              <div>
+                <NoneImg alt="preview" src={image1} />
+              </div>
+            )}
+          </ImgBox>
         </LiImg>
         <ButDiv>
-          <AddBut onClick={onAddComment}>작성하기</AddBut>
-          <CancelBut onClick={() => navigate("/")}>
-            취소하기
-          </CancelBut>
+          <AddBut onClick={onAddProduct}>작성하기</AddBut>
+          <CancelBut onClick={() => navigate("/")}>취소하기</CancelBut>
         </ButDiv>
       </Box>
     </StDetailForm>
@@ -243,7 +249,7 @@ const BoxSpan = styled.p`
 const LiImg = styled.div`
   width: 100%;
   padding: 30px 0px 0px 0px;
-  display:flex;
+  display: flex;
 `;
 const ImgTitle = styled.div`
   padding-left: 0.5rem;
@@ -271,7 +277,7 @@ const ImgLabel = styled.label`
   border-radius: 15px;
   border: none;
   font-family: bold;
-  margin-bottom:1rem;
+  margin-bottom: 1rem;
   &:hover {
     cursor: pointer;
   }
@@ -300,14 +306,14 @@ const DeleteImg = styled.button`
   margin: -10.3px;
   position: relative;
   color: red;
-  right: -45%;;
+  right: -45%;
   bottom: 90%;
   background-color: white;
   font-weight: bold;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size:2rem;
+  font-size: 2rem;
 `;
 const LiTilte = styled.div`
   padding: 10px 0px;
