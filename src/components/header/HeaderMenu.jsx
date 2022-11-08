@@ -26,24 +26,42 @@ const HeaderMenu = ({ modalHandler }) => {
     }
   };
 
+  // 로그아웃 Click했을 경우
+  const logout = () => {
+    sessionStorage.removeItem("ACCESS_TOKEN");
+    sessionStorage.removeItem("REFRESH_TOKEN");
+    sessionStorage.removeItem("role");
+    modalHandler();
+    alert("로그아웃")
+  };
+
   return (
     <MenuContainer>
       <Menu ref={modalRef}>
         <h3 onClick={() => navigate("/")}>홈</h3>
         <br />
+
+        {/* 로그인 했을 경우 */}
         {token !== null ? (
           <>
-            <h3 onClick={() => navigate("/mypage")}>마이페이지</h3>
-            <h3 onClick={() => navigate("/form")}>상품등록</h3>
+            <h3 onClick={() => navigate("/form")}>상품 등록</h3>
+            <h3 onClick={() => navigate("/cart")}>장바구니</h3>
           </>
         ) : null}
+
+        {/* 관리자일 경우 */}
+        {role === "ADMIN" ? (
+          <h3 onClick={() => navigate("/form")}>상품 등록</h3>
+        ) : null}
+
+        {/* 로그인 했을 경우 "로그아웃", 로그인 안 했을 경우 "로그인" */}
         <div>
           {token === null ? (
             <h3 onClick={() => navigate("/login")}>로그인 ＞</h3>
           ) : (
             <h3
               onClick={() => {
-                // logout();
+                logout();
               }}
             >
               로그아웃 ＞
